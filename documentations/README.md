@@ -4,7 +4,7 @@
 
 ## Editer
 
-## Concaténation de fichiers pdfs
+## Fusion de fichiers pdfs
 
 ## Découpage de fichiers pdfs
 
