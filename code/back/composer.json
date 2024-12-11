@@ -1,7 +1,6 @@
 {
     "autoload": {
         "psr-4": {
-            "PdfPseudoApp\\DataExtraction\\": "src/pdf-pseudo-app/data-extraction",
             "PdfPseudoApp\\App\\": "src/pdf-pseudo-app/app",
             "PdfPseudoApp\\Utils\\": "src/pdf-pseudo-app/utils",
             "Routing\\": "src/routing",

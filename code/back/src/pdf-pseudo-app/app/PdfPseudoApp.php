@@ -15,10 +15,12 @@ class PdfPseudoApp{
      */
     public function __construct(
         public readonly string $pdfFilePath,
+        public readonly string $pythonScriptPath,
         public readonly ?Logger $logger = null
     ){}
 
     public function getEntitiesToTransform():void{
+        die(shell_exec(command: "python3 $this->pythonScriptPath $this->pdfFilePath"));
         die("ici");
     }
 
@@ -30,12 +32,12 @@ class PdfPseudoApp{
      */
     public static function isUploadedFileSecure(array $fileData,?Logger $logger = null):bool{
         try{
-            if ($fileData["type"] !== "application/pdf")
+            if($fileData["type"] !== "application/pdf")
                 return false;
 
-            $fileContent = file_get_contents(filename: $fileData["tmp_name"], context: null,length:  4);
+            $fileContent = @file_get_contents(filename: $fileData["tmp_name"], context: null,length:  4);
 
-            if(!str_starts_with(haystack: $fileContent,needle:  "%PDF"))
+            if($fileContent === false || !str_starts_with(haystack: $fileContent,needle:  "%PDF"))
                 return false;
 
             return true;

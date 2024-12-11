@@ -21,7 +21,11 @@ class PdfPseudoAppController extends AbstractController {
         if(!PdfPseudoApp::isUploadedFileSecure(fileData: $_FILES["pdf"],logger: $logger))
             ApplicationRouter::unauthorized(message: ["error" => "Please send a valid pdf file"]);
 
-        $pdfPseudoApp = new PdfPseudoApp(pdfFilePath: $_FILES["pdf"]["tmp_name"],logger: $logger);
+        $pdfPseudoApp = new PdfPseudoApp(
+            pdfFilePath: $_FILES["pdf"]["tmp_name"],
+            pythonScriptPath: APP_ROOT . "data-extraction/script.py",
+            logger: $logger
+        );
         $pdfPseudoApp->getEntitiesToTransform();
 
         die("ici");
