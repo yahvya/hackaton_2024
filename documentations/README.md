@@ -6,6 +6,8 @@
 
 ## Fusion de fichiers pdfs
 
+- [https://github.com/jurosh/php-pdf-merge](https://github.com/jurosh/php-pdf-merge)
+
 ## Découpage de fichiers pdfs
 
 ## Commenter

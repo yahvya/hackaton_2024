@@ -1,0 +1,12 @@
+{
+    "autoload": {
+        "psr-4": {
+            "Controllers\\": "./src/controllers/",
+            "Models\\": "./src/models/",
+            "Treatment\\": "./src/treatment/"
+        }
+    },
+    "require": {
+        "jurosh/pdf-merge": "^2.1"
+    }
+}
