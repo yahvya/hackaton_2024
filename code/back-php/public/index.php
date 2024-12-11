@@ -16,7 +16,7 @@ require_once(APP_ROOT . "vendor/autoload.php");
 ApplicationRouter::quickRouting(
     route: $_SERVER["REQUEST_URI"],
     routesMap: [
-        "get" => [
+        "post" => [
             "/" => [PdfPseudoAppController::class,"index"]
         ]
     ]

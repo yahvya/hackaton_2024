@@ -1,4 +1,4 @@
-# Hackaton 2024
+# Hackathon 2024
 
 > SAGES, Application de pseudonymisation de fichier PDF
 
@@ -32,10 +32,13 @@
 - Les classes PHP ont été implémentés au format "psr-4", ce qui permet de copier le package et de le coller dans n'importe quel projet PHP usant de composer.
 ```
 "psr-4": {
-    "PdfPseudoApp": "src/pdf-pseudo-app"
+    "PdfPseudoApp\\DataExtraction\\": "src/pdf-pseudo-app/data-extraction",
+    "PdfPseudoApp\\App\\": "src/pdf-pseudo-app/app",
+    "PdfPseudoApp\\Utils\\": "src/pdf-pseudo-app/utils"
 }
 ```
 - Ajoutez ensuite les librairies externes utilisées en copiant les commandes ci-dessous
 ```
 composer dumpautoload -o
 ```
+- Vous trouverez l'exemple d'utilisation dans le controller ***src/controllers/PdfPseudoAppController***

@@ -1,9 +1,0 @@
-{
-    "autoload": {
-        "psr-4": {
-            "PdfPseudoApp\\": "src/pdf-pseudo-app",
-            "Routing\\": "src/routing",
-            "Controllers\\": "src/controllers"
-        }
-    }
-}

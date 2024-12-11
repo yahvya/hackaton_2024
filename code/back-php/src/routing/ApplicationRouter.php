@@ -15,7 +15,7 @@ class ApplicationRouter{
      * @return never
      */
     public static function quickRouting(string $route,array $routesMap):never{
-        $formattedRequestMethod = strtolower($_SERVER["REQUEST_METHOD"]);
+        $formattedRequestMethod = strtolower(string: $_SERVER["REQUEST_METHOD"]);
         $potentialRoutes = $routesMap[$formattedRequestMethod] ?? [];
 
         if(!array_key_exists(key: $route,array: $potentialRoutes))
@@ -35,7 +35,7 @@ class ApplicationRouter{
      * @brief render not found response
      * @return never
      */
-    protected static function notFoundResponse():never{
+    public static function notFoundResponse():never{
         http_response_code(response_code: 404);
         die();
     }
@@ -44,8 +44,19 @@ class ApplicationRouter{
      * @brief render internal error response
      * @return never
      */
-    protected static function internalError():never{
+    public static function internalError():never{
         http_response_code(response_code: 500);
         die();
+    }
+
+    /**
+     * @brief render unauthorized response
+     * @param array $message json message
+     * @return never
+     */
+    public static function unauthorized(array $message = []):never{
+        header(header: "Content-Type: application/json");
+        http_response_code(response_code: 401);
+        die(json_encode(value: $message,flags: JSON_PRETTY_PRINT));
     }
 }
