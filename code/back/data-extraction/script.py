@@ -60,6 +60,9 @@ def extract_text_from_pdf(file_path):
         text += page.extract_text()
     return text
 
+def replace_and_save_pdf(words_map,file_path):
+    pass
+
 def get_words_to_anonymize_map(text):
     analyzer = build_analyzer()
     analyzer_results = analyzer.analyze(text=text, entities=None, language="fr")
@@ -122,6 +125,6 @@ modified_text = pdf_text
 for word_data in regexyfied_words:
     modified_text = modified_text[:word_data["start"]] + word_data["word"] + modified_text[word_data["end"]:]
 
-save_to_pdf(modified_text, sys.argv[2])
-
+#save_to_pdf(modified_text, sys.argv[2])
+replace_and_save_pdf(regexyfied_words,sys.argv[2])
 print(json.dumps(regexyfied_words))
