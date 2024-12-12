@@ -1,5 +1,7 @@
 import os
-
+import random
+import string
+import fitz  # PyMuPDF
 from PyPDF2 import PdfReader
 from fpdf import FPDF
 from transformers import pipeline
@@ -60,8 +62,103 @@ def extract_text_from_pdf(file_path):
         text += page.extract_text()
     return text
 
-def replace_and_save_pdf(words_map,file_path):
+def convert_color_to_rgb(color_value):
+    # Convert ARGB color value to RGB
+    # color_value is an int in ARGB format (e.g., -13343324)
+    alpha = (color_value >> 24) & 0xFF  # Get alpha component
+    red = (color_value >> 16) & 0xFF    # Get red component
+    green = (color_value >> 8) & 0xFF   # Get green component
+    blue = color_value & 0xFF           # Get blue component
+
+    # Convert to a range 0 to 1
+    return (red / 255.0, green / 255.0, blue / 255.0)
+
+def load_pdf(file_path):
+    doc = fitz.open(file_path)
+    return doc
+
+def extract_text_and_positions(doc):
+    text_positions = {}
+    
+    for page_num in range(len(doc)):
+        page = doc[page_num]
+        blocks = page.get_text("blocks")
+        text_positions[page_num] = [
+            {"text": block[4], "bbox": block[:4]} for block in blocks
+        ]
+    
+    return text_positions
+
+def replace_text_with_random(doc):
+    new_doc = fitz.open()
+    
+    for page_num in range(len(doc)):
+        page = doc[page_num]
+        new_page = new_doc.new_page(width=page.rect.width, height=page.rect.height)
+        
+        # Copier le contenu original
+        new_page.show_pdf_page(new_page.rect, doc, page_num)
+        
+        dict_blocks = page.get_text("dict")
+        blocks = dict_blocks["blocks"]
+        
+        for block in blocks:
+            if "lines" not in block:
+                continue
+                
+            for line in block["lines"]:
+                for span in line["spans"]:
+                    rect = fitz.Rect(span["bbox"])
+                    font_size = span["size"]
+                    font_name = span["font"]
+                    color = span["color"]
+                    original_text = span["text"]
+                    
+                    # Extraire la couleur de fond
+                    background_color = None
+                    try:
+                        # Obtenir le pixmap de la zone
+                        pix = page.get_pixmap(matrix=fitz.Matrix(2, 2), clip=rect)
+                        # Prendre la couleur du premier pixel (supposé être la couleur de fond)
+                        background_color = pix.pixel(0, 0)
+                        # Convertir en RGB normalisé (0-1)
+                        background_color = (
+                            background_color[0] / 255.0,
+                            background_color[1] / 255.0,
+                            background_color[2] / 255.0
+                        )
+                    except:
+                        # En cas d'erreur, utiliser le blanc comme couleur par défaut
+                        background_color = (1, 1, 1)
+                    
+                    random_text = generate_text()
+                    
+                    # Utiliser la couleur de fond extraite pour le rectangle
+                    new_page.draw_rect(rect, color=background_color, fill=background_color)
+                    
+                    # Calculer le point d'insertion ajusté
+                    # Ajout d'un décalage vertical basé sur la taille de la police
+                    insertion_point = fitz.Point(
+                        rect.tl.x,  # x reste identique
+                        rect.tl.y + font_size * 0.85  # ajustement vertical
+                    )
+                    
+                    new_page.insert_text(
+                        insertion_point,
+                        random_text,
+                        fontname="helv",
+                        fontsize=font_size,
+                        color=convert_color_to_rgb(color)
+                    )
+    return new_doc
+
+def generate_text(words_map,file_path):
+    pass 
+
+def close_pdf():
     pass
+
+
 
 def get_words_to_anonymize_map(text):
     analyzer = build_analyzer()
