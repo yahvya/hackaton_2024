@@ -8,3 +8,4 @@ reportlab
 tensorflow
 tf-keras
 tiktoken
+Faker

@@ -40,13 +40,4 @@ class PdfPseudoAppController extends AbstractController {
             ApplicationRouter::internalError();
         }
     }
-
-    /**
-     * @brief save the final pdf to treat
-     * @return never
-     */
-    public function save():never{
-
-        $this->renderJson(json: []);
-    }
 }

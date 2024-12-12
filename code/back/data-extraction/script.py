@@ -1,4 +1,5 @@
 import os
+
 from PyPDF2 import PdfReader
 from fpdf import FPDF
 from transformers import pipeline
@@ -8,8 +9,9 @@ from presidio_analyzer.nlp_engine import NlpEngineProvider
 import sys
 import json
 from reportlab.pdfgen import canvas
+import re
+import rstr
 
-# Classe TransformerRecognizer pour utiliser un modèle NER Transformer
 class TransformerRecognizer(EntityRecognizer):
     def __init__(self, model_id, mapping_labels, aggregation_strategy="simple"):
         super().__init__(supported_entities=list(mapping_labels.values()), supported_language="fr")
@@ -38,19 +40,19 @@ class TransformerRecognizer(EntityRecognizer):
                     )
         return results
 
-# Configuration du pipeline NER et Presidio
-mapping_labels = {"PER": "PERSON", "LOC": "LOCATION", "ORG": "ORGANIZATION", "MISC": "MISC"}
-transformers_recognizer = TransformerRecognizer("Jean-Baptiste/camembert-ner", mapping_labels)
+def build_analyzer():
+    mapping_labels = {"PERSON": "PERSON", "LOCATION": "LOCATION", "ORGANIZATION": "ORGANIZATION",
+                      "EMAIL_ADDRESS": "EMAIL_ADDRESS", "PHONE_NUMBER": "PHONE_NUMBER","CREDIT_CARD": "CREDIT_CARD","CRYPTO": "CRYPTO","IBAN_CODE": "IBAN_CODE","IP_ADDRESS":"IP_ADDRESS"}
+    transformers_recognizer = TransformerRecognizer("Jean-Baptiste/camembert-ner", mapping_labels)
 
-configuration = {"nlp_engine_name": "spacy", "models": [{"lang_code": "fr", "model_name": "fr_core_news_lg"}]}
-provider = NlpEngineProvider(nlp_configuration=configuration)
-nlp_engine = provider.create_engine()
-analyzer = AnalyzerEngine(nlp_engine=nlp_engine, supported_languages=["fr"])
-analyzer.registry.add_recognizer(transformers_recognizer)
+    configuration = {"nlp_engine_name": "spacy", "models": [{"lang_code": "fr", "model_name": "fr_core_news_lg"}]}
+    provider = NlpEngineProvider(nlp_configuration=configuration)
+    nlp_engine = provider.create_engine()
+    analyzer = AnalyzerEngine(nlp_engine=nlp_engine, supported_languages=["fr"])
+    analyzer.registry.add_recognizer(transformers_recognizer)
 
-anonymizer = AnonymizerEngine()
+    return analyzer
 
-# Fonction pour extraire le texte d'un fichier PDF
 def extract_text_from_pdf(file_path):
     reader = PdfReader(file_path)
     text = ""
@@ -58,20 +60,12 @@ def extract_text_from_pdf(file_path):
         text += page.extract_text()
     return text
 
-# Fonction pour anonymiser le texte
-def anonymize_text(text):
+def get_words_to_anonymize_map(text):
+    analyzer = build_analyzer()
     analyzer_results = analyzer.analyze(text=text, entities=None, language="fr")
-    anonymized_result = anonymizer.anonymize(text=text, analyzer_results=analyzer_results)
-    return anonymized_result.text, anonymized_result.items
-
-# Fonction pour colorer le texte anonymisé
-def colorize_text(original_text, entities):
-    colored_text = original_text
-    for entity in sorted(entities, key=lambda x: x.start, reverse=True):
-        replacement = f"\033[93m{colored_text[entity.start:entity.end]}\033[0m"
-        colored_text = colored_text[:entity.start] + replacement + colored_text[entity.end:]
-    return colored_text
-
+    allowed_types = ["PERSON","LOCATION","EMAIL_ADDRESS","CREDIT_CARD","CRYPTO","IBAN_CODE","PHONE_NUMBER","ORGANISATION","NUMBER"]
+    filtered_list_by_score = list(filter(lambda result: result.score >= 0.4 and result.entity_type in allowed_types, analyzer_results))
+    return [{"word": text[result.start:result.end],"start": result.start,"end":result.end,"type": result.entity_type,"score": result.score} for result in filtered_list_by_score]
 
 def save_to_pdf(text, output_path):
     c = canvas.Canvas(output_path)
@@ -89,11 +83,45 @@ def save_to_pdf(text, output_path):
 
     c.save()
 
-text = extract_text_from_pdf(sys.argv[1])
-anonymized_text, entities = anonymize_text(text)
-colorized_text = colorize_text(anonymized_text, entities)
-save_to_pdf(colorized_text, sys.argv[2])
+def regexify_str(input_str):
+    regex_str = ""
 
-words = [{"word": text[entity.start:entity.end],"start": entity.start,"end": entity.end} for entity in entities]
+    regex_map = [
+        "[\n]",
+        "[ ]",
+        "[\r]",
+        "[\t]",
+        "[a-zA-Z]",
+        "[0-9]",
+        "[@]",
+        "[.]",
+        "[ÉÈÀÙÂÊÎÔÛÄËÏÖÜÇéèàùâêîôûäëïöüç]",
+        "."
+    ]
 
-print(json.dumps(words))
+    for char in input_str:
+        for regex in regex_map:
+            if re.match(regex,char):
+                regex_str = regex_str + regex
+                break
+
+    return regex_str
+
+def generate_text_from_regex(regex):
+    return rstr.xeger(regex)
+
+# read pdf and get words data
+pdf_text = extract_text_from_pdf(sys.argv[1])
+words = get_words_to_anonymize_map(pdf_text)
+
+# replace element in word data
+regexyfied_words = [{"word": word_data["word"],"modified_word": generate_text_from_regex(regexify_str(word_data["word"])),"start": word_data["start"],"end": word_data["end"]} for word_data in words]
+
+modified_text = pdf_text
+
+for word_data in regexyfied_words:
+    modified_text = modified_text[:word_data["start"]] + word_data["word"] + modified_text[word_data["end"]:]
+
+save_to_pdf(modified_text, sys.argv[2])
+
+print(json.dumps(regexyfied_words))

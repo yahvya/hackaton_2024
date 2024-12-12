@@ -12,7 +12,51 @@
     }
   ],
   "paths": {
-    
+    "/pdfpseudo/entities": {
+      "post": {
+        "summary": "Provide the modified pdf and the changed entities",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": ["object"],
+                "properties": {
+                  "pdf": {
+                    "type": ["object"],
+                    "description": "Pdf file to load"
+                  }
+                },
+                "required": ["pdf"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "500": {
+            "description": "Internal error by thre server"
+          },
+          "401": {
+            "description": "Unauthorized action due to the provided error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": ["object"],
+                  "properties": {
+
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+
+          },
+          "200": {
+
+          }
+        }
+      }
+    }
   },
   "components": {
     "responses": {
