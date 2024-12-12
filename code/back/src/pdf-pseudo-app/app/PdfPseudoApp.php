@@ -4,6 +4,7 @@ namespace PdfPseudoApp\App;
 
 use Exception;
 use PdfPseudoApp\Utils\Logger;
+use Ramsey\Uuid\Uuid;
 use Throwable;
 
 /**
@@ -13,11 +14,13 @@ class PdfPseudoApp{
     /**
      * @param string $pdfFilePath pdf file path
      * @param string $pythonScriptPath python entities load script path
+     * @param string $privateStoragePath private storage path
      * @param Logger|null $logger logger
      */
     public function __construct(
         public readonly string $pdfFilePath,
         public readonly string $pythonScriptPath,
+        public readonly string $privateStoragePath,
         public readonly ?Logger $logger = null
     ){}
 
@@ -29,24 +32,40 @@ class PdfPseudoApp{
     public function getEntitiesToTransform():array{
         try{
             $commands = ["python3","python"];
+            $id = Uuid::uuid4()->toString();
+            $pdfDstPath = "$this->privateStoragePath$id.pdf";
 
             foreach($commands as $command){
-                $entitiesData = @shell_exec(command: "$command $this->pythonScriptPath $this->pdfFilePath");
+                $entitiesData = @shell_exec(command: "$command $this->pythonScriptPath $this->pdfFilePath $pdfDstPath");
 
                 if(!empty($entitiesData))
                     break;
             }
 
-            $result = @json_decode(json: $entitiesData,associative: true);
+            $conversionResult = @json_decode(json: $entitiesData,associative: true);
 
-            if(empty($result))
+            if(empty($conversionResult))
                 throw new Exception(message: "Empty elements get received");
+
+            $pdfContent = @file_get_contents(filename: $pdfDstPath);
+
+            if(empty($pdfContent)){
+                @unlink($pdfDstPath);
+                throw new Exception(message: "Fail to read the tmp pdf file");
+            }
+
+            $result = [
+                "entities" => $conversionResult,
+                "pdfAsBlob" => base64_encode(string: $pdfContent)
+            ];
+
+            // delete the tmp file
+            @unlink($pdfDstPath);
 
             return $result;
         }
         catch(Throwable $e){
-            if($this->logger !== null)
-                $this->logger->log(message: $e->getMessage());
+            $this->logger?->log(message: $e->getMessage());
 
             throw new Exception(message: "Fail to treat pdf");
         }

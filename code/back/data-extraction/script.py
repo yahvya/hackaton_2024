@@ -7,6 +7,7 @@ from presidio_anonymizer import AnonymizerEngine
 from presidio_analyzer.nlp_engine import NlpEngineProvider
 import sys
 import json
+from reportlab.pdfgen import canvas
 
 # Classe TransformerRecognizer pour utiliser un modèle NER Transformer
 class TransformerRecognizer(EntityRecognizer):
@@ -71,8 +72,27 @@ def colorize_text(original_text, entities):
         colored_text = colored_text[:entity.start] + replacement + colored_text[entity.end:]
     return colored_text
 
+
+def save_to_pdf(text, output_path):
+    c = canvas.Canvas(output_path)
+    c.setFont("Helvetica", 12)
+    width, height = 595.27, 841.89  # Taille A4 en points
+    y = height - 40  # Position de départ en haut de la page
+
+    for line in text.split("\n"):
+        c.drawString(40, y, line)
+        y -= 15
+        if y < 40:  # Ajoutez une nouvelle page si nécessaire
+            c.showPage()
+            c.setFont("Helvetica", 12)
+            y = height - 40
+
+    c.save()
+
 text = extract_text_from_pdf(sys.argv[1])
 anonymized_text, entities = anonymize_text(text)
+colorized_text = colorize_text(anonymized_text, entities)
+save_to_pdf(colorized_text, sys.argv[2])
 
 words = [{"word": text[entity.start:entity.end],"start": entity.start,"end": entity.end} for entity in entities]
 

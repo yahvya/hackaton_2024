@@ -6,5 +6,9 @@
             "Routing\\": "src/routing",
             "Controllers\\": "src/controllers"
         }
+    },
+    "require": {
+        "setasign/fpdf": "^1.8",
+        "ramsey/uuid": "^4.7"
     }
 }

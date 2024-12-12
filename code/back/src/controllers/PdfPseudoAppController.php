@@ -29,6 +29,7 @@ class PdfPseudoAppController extends AbstractController {
         $pdfPseudoApp = new PdfPseudoApp(
             pdfFilePath: $_FILES["pdf"]["tmp_name"],
             pythonScriptPath: APP_ROOT . "data-extraction/script.py",
+            privateStoragePath: APP_ROOT . "private-storage/",
             logger: $logger
         );
 
