@@ -125,6 +125,5 @@ modified_text = pdf_text
 for word_data in regexyfied_words:
     modified_text = modified_text[:word_data["start"]] + word_data["word"] + modified_text[word_data["end"]:]
 
-#save_to_pdf(modified_text, sys.argv[2])
 replace_and_save_pdf(regexyfied_words,sys.argv[2])
 print(json.dumps(regexyfied_words))
