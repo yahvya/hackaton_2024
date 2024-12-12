@@ -118,7 +118,7 @@ export default function FileUpload() {
             <Card key={index} className="relative inline-block m-2">
               <CardContent className="p-2">
                 <embed
-                  src={URL.createObjectURL(pdf)}
+                  src={`data:application/pdf;base64,${pdf}`}
                   type="application/pdf"
                   className="w-full h-full"
                 />
