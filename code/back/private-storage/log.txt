@@ -1,1 +1,3 @@
-1734012234 : Empty elements get received
+1734038943 : Cannot access offset of type string on string
+1734039092 : Cannot access offset of type string on string
+1734039165 : Cannot access offset of type string on string

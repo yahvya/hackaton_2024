@@ -1,6 +1,7 @@
 import json
 import sys
-
+import traceback
+import pikepdf
 from pdf_pseudo import PdfPseudo
 from transform_recognizer import TransformerRecognizer
 
@@ -42,13 +43,16 @@ try:
         pdf_pseudo = PdfPseudo(input_file_path=pdf_input_path,analyser=analyzer)
 
         if action == "anonymise":
-            entities_map = pdf_pseudo.anonymise()
+            entities_map = pdf_pseudo.anonymise(output_file_path= result_output_path)
             result_map[pdf_input_path] = entities_map
         elif action == "reconstruct":
             pdf_pseudo.reconstruct(entities_map=reconstruct_entities_map[index])
 
         pdf_pseudo.save_result_in(output_file_path=result_output_path)
+        pdf_pseudo.free_resources(output_file_path=result_output_path)
 
     render_response(response={"success": True, "entities_map": result_map})
-except:
+except Exception as e:
+    traceback.print_exc()
+    print(e)
     render_response(response={"success": False, "error": "Unexpected error"})

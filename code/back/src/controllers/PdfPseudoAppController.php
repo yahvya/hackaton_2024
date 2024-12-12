@@ -22,13 +22,26 @@ class PdfPseudoAppController extends AbstractController {
         # init logger
         $logger = new DefaultLogger(logFileAbsolutePath: APP_ROOT . "private-storage/log.txt");
 
+        # convert to normalized arrays
+        $normalizedDatas = [];
+
+        foreach($_FILES["pdfs"]["tmp_name"] as $index => $tmpName) {
+            $normalizedDatas[] = [
+                "tmp_name" => $tmpName,
+                "name" => $_FILES["pdfs"]["name"][$index],
+                "type" => $_FILES["pdfs"]["type"][$index],
+                "size" => $_FILES["pdfs"]["size"][$index],
+                "error" => $_FILES["pdfs"]["error"][$index]
+            ];
+        }
+
         # check the provided file security
-        if(!PdfPseudoApp::isUploadedFileSecure(fileData: $_FILES["pdf"],logger: $logger))
+        if(!PdfPseudoApp::isUploadedFileSecure(fileDatas: $normalizedDatas,logger: $logger))
             ApplicationRouter::unauthorized(message: ["error" => "Please send a valid pdf file"]);
 
         $pdfPseudoApp = new PdfPseudoApp(
-            pdfFilePath: $_FILES["pdf"]["tmp_name"],
-            pythonScriptPath: APP_ROOT . "data-extraction/script.py",
+            pdfFilePaths: array_map(fn(array $datas):string => $datas["tmp_name"],$normalizedDatas),
+            pythonScriptPath: APP_ROOT . "data-extraction/app.py",
             privateStoragePath: APP_ROOT . "private-storage/",
             logger: $logger
         );

@@ -1,7 +1,11 @@
 import fitz
 import re
+
+import pikepdf
 import rstr
 import faker
+from PyPDF2 import PdfReader
+
 
 # pdf pseudo manager
 class PdfPseudo:
@@ -11,6 +15,7 @@ class PdfPseudo:
         self.doc = None
         self.fake = faker.Faker()
         self.anonymized_items = []
+        self.new_metadata = {}
 
     # regexify a file
     def regexify_str(self,input_str):
@@ -95,7 +100,6 @@ class PdfPseudo:
                 base_len = len(word_data["word"])
                 while len(word_data["modified"]) > base_len:
                     word_data["modified"] = self.fake.email()
-                    print("loop")
             elif word_data["type"] == "PHONE_NUMBER":
                 word_data["modified"] = self.generate_phone_number_with_format(word_data["word"])
             else:
@@ -107,10 +111,36 @@ class PdfPseudo:
         return text
 
     # process the anonymise process
-    def anonymise(self):
+    def anonymise(self,output_file_path):
+        self.new_metadata = {}
+
+        reader = PdfReader(self.input_file_path)
+        pdf_metadatas = reader.metadata
+
+        if "/ecv-data" in pdf_metadatas:
+            del pdf_metadatas["/ecv-data"]
+
+        for metadata_key in pdf_metadatas:
+            self.anonymized_items = []
+            self.new_metadata[metadata_key] = {
+                "modified": self.anonymise_internal(text=str(pdf_metadatas[metadata_key])),
+                "entities": self.anonymized_items
+            }
+
+        with pikepdf.open(self.input_file_path) as pdf:
+            pdf.metadata = self.new_metadata
+
+            # Save the modified PDF
+            pdf.save(output_file_path)
+
         self.anonymized_items = []
         self.parse_pdf(to_do_for_line= self.anonymise_internal)
-        return self.anonymized_items
+        pdf_content_items = self.anonymized_items
+
+        return {
+            "content_entities": pdf_content_items,
+            "metadata_entities": self.new_metadata
+        }
 
     # process the reconstruct
     def reconstruct(self,entities_map):
@@ -206,5 +236,5 @@ class PdfPseudo:
         self.doc.save(output_file_path)
 
     # free class resources
-    def free_resources(self):
+    def free_resources(self,output_file_path):
         self.doc.close()
