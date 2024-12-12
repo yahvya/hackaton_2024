@@ -9,3 +9,4 @@ tensorflow
 tf-keras
 tiktoken
 Faker
+PyMuPDF
