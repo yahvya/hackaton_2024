@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 interface FileWithPreview extends File {
@@ -13,7 +13,7 @@ interface FileWithPreview extends File {
 export default function FileUpload() {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
 
-  const [allPdf]
+  const [pdfAsBlob, setPdfAsBlob] = useState<Blob[]>([]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(
@@ -38,37 +38,33 @@ export default function FileUpload() {
     setFiles(newFiles);
   };
 
-    const uploadFiles = async () => {
-      if (files.length === 0) return;
+  const uploadFiles = async () => {
+    if (files.length === 0) return;
 
-      try {
-        const formData = new FormData();
-        files.forEach((file) => {
-          formData.append("pdfs[]", file);
-        });
+    try {
+      const formData = new FormData();
+      files.forEach((file) => {
+        formData.append("pdfs[]", file);
+      });
 
-        const response = await fetch("http://127.0.0.1:8080/pdfpseudo/entities", {
-          method: "POST",
-          body: formData,
-        });
+      const response = await fetch("http://127.0.0.1:8080/pdfpseudo/entities", {
+        method: "POST",
+        body: formData,
+      });
 
-        if (!response.ok) {
-          throw new Error("Erreur lors de l'envoi des fichiers");
-        }
-
-        const data = await response.json();
-        const all_pdfAsBlob = []
-        for(let key in data){
-          all_pdfAsBlob.push(data[key].pdfAsBlob);
-        }
-        return all_pdfAsBlob
-      } catch (error) {
-        console.error("Erreur lors de l'envoi des fichiers:", error);
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'envoi des fichiers");
       }
-      return null
 
+      const data = await response.json();
+
+      for (const key in data) {
+        setPdfAsBlob([...pdfAsBlob, data[key].pdfAsBlob]);
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'envoi des fichiers:", error);
     }
-
+  };
 
   const thumbs = files.map((file) => (
     <Card key={file.name} className="relative inline-block m-2 ">
@@ -115,12 +111,28 @@ export default function FileUpload() {
         </h4>
         {thumbs}
       </aside>
+      {pdfAsBlob.length > 0 && (
+        <div>
+          <h4 className="text-lg font-semibold mb-2">Fichiers PDF générés :</h4>
+          {pdfAsBlob.map((pdf, index) => (
+            <Card key={index} className="relative inline-block m-2">
+              <CardContent className="p-2">
+                <embed
+                  src={URL.createObjectURL(pdf)}
+                  type="application/pdf"
+                  className="w-full h-full"
+                />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
       {files.length > 0 && (
         <Button
           className="mt-4"
           onClick={() => {
             uploadFiles();
-
           }}
         >
           Envoyer les fichiers
