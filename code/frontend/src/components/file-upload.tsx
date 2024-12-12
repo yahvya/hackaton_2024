@@ -13,6 +13,8 @@ interface FileWithPreview extends File {
 export default function FileUpload() {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
 
+  const [allPdf]
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(
       acceptedFiles.map((file) =>
@@ -36,17 +38,16 @@ export default function FileUpload() {
     setFiles(newFiles);
   };
 
-  useEffect(() => {
     const uploadFiles = async () => {
       if (files.length === 0) return;
 
       try {
         const formData = new FormData();
         files.forEach((file) => {
-          formData.append("files", file);
+          formData.append("pdfs[]", file);
         });
 
-        const response = await fetch("/api/upload", {
+        const response = await fetch("http://127.0.0.1:8080/pdfpseudo/entities", {
           method: "POST",
           body: formData,
         });
@@ -56,15 +57,18 @@ export default function FileUpload() {
         }
 
         const data = await response.json();
-        console.log("Fichiers envoyés avec succès:", data);
+        const all_pdfAsBlob = []
+        for(let key in data){
+          all_pdfAsBlob.push(data[key].pdfAsBlob);
+        }
+        return all_pdfAsBlob
       } catch (error) {
         console.error("Erreur lors de l'envoi des fichiers:", error);
-        // Ici vous pouvez ajouter une notification d'erreur pour l'utilisateur
       }
-    };
+      return null
 
-    uploadFiles();
-  }, [files]);
+    }
+
 
   const thumbs = files.map((file) => (
     <Card key={file.name} className="relative inline-block m-2 ">
@@ -114,7 +118,10 @@ export default function FileUpload() {
       {files.length > 0 && (
         <Button
           className="mt-4"
-          onClick={() => console.log("Fichiers à envoyer:", files)}
+          onClick={() => {
+            uploadFiles();
+
+          }}
         >
           Envoyer les fichiers
         </Button>

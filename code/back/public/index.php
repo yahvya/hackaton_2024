@@ -12,6 +12,10 @@ const APP_ROOT = __DIR__ . "/../";
 # init app
 require_once(APP_ROOT . "vendor/autoload.php");
 
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
+
 # launch app
 ApplicationRouter::quickRouting(
     route: $_SERVER["REQUEST_URI"],
