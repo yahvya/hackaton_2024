@@ -14,6 +14,9 @@
 - OpenApi
 - Php natif
 - Python
+- ReactJs
+
+![](./architecture.png)
 
 #### Spécifications
 > L'écriture des spécifications a été réalisé à l'aide du formalisme de description OpenApi. Ce format permet de générer la documentation ainsi que les collections Postman mais également, de générer un site de documentation.

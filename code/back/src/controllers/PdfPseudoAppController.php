@@ -5,12 +5,17 @@ namespace Controllers;
 use PdfPseudoApp\App\PdfPseudoApp;
 use PdfPseudoApp\Utils\DefaultLogger;
 use Routing\ApplicationRouter;
+use Throwable;
 
 /**
  * @brief pdf app treatment controller
  */
 class PdfPseudoAppController extends AbstractController {
-    public function index():void{
+    /**
+     * @brief provide the entities to mask for the provided pdf
+     * @return never
+     */
+    public function provideEntities():never{
         if(!array_key_exists(key: "pdf",array: $_FILES))
             ApplicationRouter::unauthorized(["error" => "Please provide a pdf file"]);
 
@@ -26,8 +31,21 @@ class PdfPseudoAppController extends AbstractController {
             pythonScriptPath: APP_ROOT . "data-extraction/script.py",
             logger: $logger
         );
-        $pdfPseudoApp->getEntitiesToTransform();
 
-        die("ici");
+        try{
+            $this->renderJson(json: $pdfPseudoApp->getEntitiesToTransform());
+        }
+        catch(Throwable){
+            ApplicationRouter::internalError();
+        }
+    }
+
+    /**
+     * @brief save the final pdf to treat
+     * @return never
+     */
+    public function save():never{
+
+        $this->renderJson(json: []);
     }
 }

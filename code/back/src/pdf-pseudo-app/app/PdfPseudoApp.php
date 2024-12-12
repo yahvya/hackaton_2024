@@ -2,6 +2,7 @@
 
 namespace PdfPseudoApp\App;
 
+use Exception;
 use PdfPseudoApp\Utils\Logger;
 use Throwable;
 
@@ -11,6 +12,7 @@ use Throwable;
 class PdfPseudoApp{
     /**
      * @param string $pdfFilePath pdf file path
+     * @param string $pythonScriptPath python entities load script path
      * @param Logger|null $logger logger
      */
     public function __construct(
@@ -19,9 +21,35 @@ class PdfPseudoApp{
         public readonly ?Logger $logger = null
     ){}
 
-    public function getEntitiesToTransform():void{
-        die(shell_exec(command: "python3 $this->pythonScriptPath $this->pdfFilePath"));
-        die("ici");
+    /**
+     * @brief search and provide the entities data to transform
+     * @return array entities data
+     * @throws Exception on error
+     */
+    public function getEntitiesToTransform():array{
+        try{
+            $commands = ["python3","python"];
+
+            foreach($commands as $command){
+                $entitiesData = @shell_exec(command: "$command $this->pythonScriptPath $this->pdfFilePath");
+
+                if(!empty($entitiesData))
+                    break;
+            }
+
+            $result = @json_decode(json: $entitiesData,associative: true);
+
+            if(empty($result))
+                throw new Exception(message: "Empty elements get received");
+
+            return $result;
+        }
+        catch(Throwable $e){
+            if($this->logger !== null)
+                $this->logger->log(message: $e->getMessage());
+
+            throw new Exception(message: "Fail to treat pdf");
+        }
     }
 
     /**
