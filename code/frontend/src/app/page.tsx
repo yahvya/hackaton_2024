@@ -1,9 +1,7 @@
-import { Button } from "@/components/ui/button";
-
 export default function Home() {
   return (
-    <div>
-      <Button>Click me</Button>
+    <div className="flex min-h-screen flex-col">
+      <main className="flex-1">{/* Your page content */}</main>
     </div>
   );
 }
