@@ -16,7 +16,7 @@ class PdfPseudoAppController extends AbstractController {
      * @return never
      */
     public function provideEntities():never{
-        if(!array_key_exists(key: "pdf",array: $_FILES))
+        if(!array_key_exists(key: "pdfs",array: $_FILES))
             ApplicationRouter::unauthorized(["error" => "Please provide a pdf file"]);
 
         # init logger

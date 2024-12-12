@@ -1,60 +1,8 @@
-import os
-import random
-import string
-import fitz  # PyMuPDF
-from PyPDF2 import PdfReader
-from fpdf import FPDF
-from transformers import pipeline
-from presidio_analyzer import AnalyzerEngine, RecognizerResult, EntityRecognizer
-from presidio_anonymizer import AnonymizerEngine
-from presidio_analyzer.nlp_engine import NlpEngineProvider
+import fitz
 import sys
 import json
-from reportlab.pdfgen import canvas
 import re
 import rstr
-
-class TransformerRecognizer(EntityRecognizer):
-    def __init__(self, model_id, mapping_labels, aggregation_strategy="simple"):
-        super().__init__(supported_entities=list(mapping_labels.values()), supported_language="fr")
-        self.pipeline = pipeline(
-            "token-classification",
-            model=model_id,
-            aggregation_strategy=aggregation_strategy,
-            ignore_labels=["O"]
-        )
-        self.label2presidio = mapping_labels
-
-    def analyze(self, text, entities=None, nlp_artifacts=None):
-        results = []
-        predictions = self.pipeline(text)
-        for entity in predictions:
-            if entity["entity_group"] in self.label2presidio:
-                converted_entity = self.label2presidio[entity["entity_group"]]
-                if entities is None or converted_entity in entities:
-                    results.append(
-                        RecognizerResult(
-                            entity_type=converted_entity,
-                            start=entity["start"],
-                            end=entity["end"],
-                            score=entity["score"]
-                        )
-                    )
-        return results
-
-# create the words analyzer
-def build_analyzer():
-    mapping_labels = {"PERSON": "PERSON", "LOCATION": "LOCATION", "ORGANIZATION": "ORGANIZATION",
-                      "EMAIL_ADDRESS": "EMAIL_ADDRESS", "PHONE_NUMBER": "PHONE_NUMBER","CREDIT_CARD": "CREDIT_CARD","CRYPTO": "CRYPTO","IBAN_CODE": "IBAN_CODE","IP_ADDRESS":"IP_ADDRESS"}
-    transformers_recognizer = TransformerRecognizer("Jean-Baptiste/camembert-ner", mapping_labels)
-
-    configuration = {"nlp_engine_name": "spacy", "models": [{"lang_code": "fr", "model_name": "fr_core_news_lg"}]}
-    provider = NlpEngineProvider(nlp_configuration=configuration)
-    nlp_engine = provider.create_engine()
-    analyzer = AnalyzerEngine(nlp_engine=nlp_engine, supported_languages=["fr"])
-    analyzer.registry.add_recognizer(transformers_recognizer)
-
-    return analyzer
 
 # parse the pdf text and provide the first element list
 def get_words_to_anonymize_map(text):
@@ -69,11 +17,17 @@ def regexify_str(input_str):
     regex_str = ""
 
     regex_map = [
+        "[\+]",
+        "[\-]",
+        "[\/]",
+        "[\(]",
+        "[\)]",
         "[\n]",
         "[ ]",
         "[\r]",
         "[\t]",
-        "[a-zA-Z]",
+        "[A-Z]",
+        "[a-z]",
         "[0-9]",
         "[@]",
         "[.]",
@@ -171,8 +125,6 @@ def replace_text_in_pdf(doc,words_map):
                     for word_data in  words_map:
                         if re.match(f".*{re.escape(word_data['word'])}.*",replace_text):
                             replace_text = replace_text.replace(word_data["word"],word_data["modified_word"])
-                            break
-
 
                     # Utiliser la couleur de fond extraite pour le rectangle
                     new_page.draw_rect(rect, color=background_color, fill=background_color)
@@ -234,6 +186,5 @@ def anonymize_pdf(input_file_path,output_file_path):
     new_pdf_doc.close()
 
     print(json.dumps(words_map))
-
 
 anonymize_pdf(sys.argv[1],sys.argv[2])
