@@ -210,25 +210,32 @@ class PdfPseudo:
                             # En cas d'erreur, utiliser le blanc comme couleur par défaut
                             background_color = (1, 1, 1)
 
-                        replace_text = to_do_for_line(original_text)
-
                         # Utiliser la couleur de fond extraite pour le rectangle
-                        new_page.draw_rect(rect, color=background_color, fill=background_color)
+                        # new_page.draw_rect(rect, color=background_color, fill=background_color)
 
                         # Calculer le point d'insertion ajusté
                         # Ajout d'un décalage vertical basé sur la taille de la police
-                        insertion_point = fitz.Point(
-                            rect.tl.x,  # x reste identique
-                            rect.tl.y + font_size * 0.85  # ajustement vertical
-                        )
+                        #insertion_point = fitz.Point(
+                            #rect.tl.x,  # x reste identique
+                            #rect.tl.y + font_size * 0.85  # ajustement vertical
+                        #)
 
-                        new_page.insert_text(
-                            insertion_point,
-                            replace_text,
-                            fontname="helv",
-                            fontsize=font_size,
-                            color=self.convert_color_to_rgb(color_value=color)
+                        #new_page.insert_text(
+                            #insertion_point,
+                            #replace_text,
+                            #fontname="helv",
+                            #fontsize=font_size,
+                            #color=self.convert_color_to_rgb(color_value=color)
+                        #)
+                        redact_annot = new_page.add_redact_annot(
+                            rect,
+                            text=to_do_for_line(original_text),
+                            fontname="helv",  # Utilisation de la police helvetica
+                            fontsize=font_size,  # Taille de police d'origine
+                            text_color= self.convert_color_to_rgb(color),  # Couleur du texte d'origine
+                            fill=background_color  # Couleur de fond détectée
                         )
+            new_page.apply_redactions()
         return self.doc
 
     # save the current doc in file
