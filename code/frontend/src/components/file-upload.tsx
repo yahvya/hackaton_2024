@@ -11,6 +11,7 @@ interface FileWithPreview extends File {
 
 export default function FileUpload() {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [pdfAsBlob, setPdfAsBlob] = useState<Blob[]>([]);
 
@@ -38,6 +39,7 @@ export default function FileUpload() {
   };
 
   const uploadFiles = async () => {
+    setIsLoading(true);
     if (files.length === 0) return;
 
     try {
@@ -56,14 +58,15 @@ export default function FileUpload() {
       }
 
       const data = await response.json();
-      const allData = []
+      const allData = [];
       for (const key in data) {
-        allData.push(data[key].pdfAsBlob );
-
+        allData.push(data[key].pdfAsBlob);
       }
-      setPdfAsBlob(allData)
+      setPdfAsBlob(allData);
     } catch (error) {
       console.error("Erreur lors de l'envoi des fichiers:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -125,7 +128,9 @@ export default function FileUpload() {
           <h1 className="text-2xl font-bold pb-4">
             {pdfAsBlob.length > 0 ? "Fichiers traités :" : ""}
           </h1>
-          {pdfAsBlob.length > 0 && (
+          {isLoading ? (
+            <p>Chargement des fichiers...</p>
+          ) : (
             <div className="flex flex-col">
               {pdfAsBlob.map((pdf, index) => (
                 <div key={index} className="w-full h-[40rem] pb-4">

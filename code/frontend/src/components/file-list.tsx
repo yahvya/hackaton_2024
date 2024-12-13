@@ -27,23 +27,28 @@ export function FileList({
     // return a.name.localeCompare(b.name);
   });
 
-   const handleClickUpdateState = async (id, status) => {
-       const form = new FormData();
+  const handleClickUpdateState = async (id, status) => {
+    const form = new FormData();
 
-       form.append("id", id)
-        form.append("status",status)
-       const response = await fetch(
-           "http://127.0.0.1:8080/pdfpseudo/status",{
-               method: "POST",
-               body: form
-           }
-       )
-       if (response.ok) {
-           console.log("response", response.body);
-       }
-
-       console.log(await response.text())
+    form.append("id", id);
+    form.append("status", status);
+    const response = await fetch("http://127.0.0.1:8080/pdfpseudo/status", {
+      method: "POST",
+      body: form,
+    });
+    if (response.ok) {
+      // cherche le file dans state et met à jour le status
+      const file = files.find((file) => file.id === id);
+      if (file) {
+        file.status = status;
+      }
+      onFileSelect([...files]);
+      console.log("file", file);
+      console.log("response", response.body);
     }
+
+    console.log(await response.text());
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -75,12 +80,11 @@ export function FileList({
               >
                 {`${file.status ? "Traité" : "En cours"}`}
               </span>
-                <button
-                    onClick={() => handleClickUpdateState(file.id, !file.status)} >
-                    Traité
-                </button>
-
-
+              <button
+                onClick={() => handleClickUpdateState(file.id, !file.status)}
+              >
+                Traité
+              </button>
             </div>
           ))}
         </div>
