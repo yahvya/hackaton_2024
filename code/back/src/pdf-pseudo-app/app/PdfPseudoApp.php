@@ -4,6 +4,7 @@ namespace PdfPseudoApp\App;
 
 use Exception;
 use PdfPseudoApp\Utils\Logger;
+use PDO;
 use Ramsey\Uuid\Uuid;
 use Throwable;
 
@@ -60,17 +61,21 @@ class PdfPseudoApp{
             $result = [];
             $index = 0;
 
+            $pdo = new PDO("mysql:host=localhost;port=3306;dbname=hackathon_2024", "root", "");
+            $request = $pdo->prepare("INSERT INTO anonymisation(entities,anonymous_pdf_file_path,status) VALUES(?,?,?)");
+
             foreach($conversionResult["entities_map"] as $baseFile => $entitiesConfig){
                 $result[$baseFile] = [
                     "entitiesConfig" => $entitiesConfig,
                     "pdfAsBlob" => @base64_encode(string:@file_get_contents(filename: $dstPaths[$index]))
                 ];
+                $request->execute([
+                    json_encode($entitiesConfig),
+                    $dstPaths[$index],
+                    0
+                ]);
                 $index++;
             }
-
-            // delete the tmp file
-            foreach($dstPaths as $dstPath)
-                @unlink($dstPath);
 
             return $result;
         }
@@ -79,6 +84,65 @@ class PdfPseudoApp{
 
             throw new Exception(message: "Fail to treat pdf");
         }
+    }
+
+    /**
+     * @brief reload
+     * @param string $privateStoragePath private storage path
+     * @return array
+     */
+    public static function reload(string $privateStoragePath,string $pythonScriptPath):array{
+        $pdo = new PDO("mysql:host=localhost;port=3306;dbname=hackathon_2024", "root", "");
+        $request = $pdo->prepare("SELECT * FROM anonymisation");
+        $request->execute();
+
+        $rows = $request->fetchAll(PDO::FETCH_ASSOC);
+
+        $sourcePaths = [];
+        $dstPaths = [];
+        $entitiesConfig = [];
+
+        foreach($rows as $row){
+            $sourcePaths[] = $row["anonymous_pdf_file_path"];
+
+            $id = Uuid::uuid4()->toString();
+            $dstPaths[] = "$privateStoragePath$id.pdf";
+            $entitiesConfig[] = $row["entities"];
+        }
+
+        $commands = ["python3","python"];
+        $sourcePathsImplode = implode(separator: ",",array: $sourcePaths);
+        $dstPathsImplode = implode(separator: ",",array: $dstPaths);
+        $encodedElements = json_encode($entitiesConfig);
+
+        $id = Uuid::uuid4()->toString();
+        $encodedElementsPath = "$privateStoragePath$id.txt";
+        @file_put_contents($encodedElementsPath, $encodedElements);
+
+        $result = [];
+
+        foreach($commands as $command){
+            $entitiesData = @shell_exec(command: "$command $pythonScriptPath $sourcePathsImplode $dstPathsImplode reconstruct $encodedElementsPath");
+
+            if(empty($entitiesData))
+                continue;
+
+            # load result data
+            foreach($dstPaths as $index => $dstPath){
+                $result[] = [
+                    "entitiesConfig" => $entitiesConfig[$index],
+                    "rebuildPdfAsBlob" => @base64_encode(string:@file_get_contents(filename: $dstPath)),
+                    "anonymousPdfAsBlob" => @base64_encode(string:@file_get_contents(filename: $sourcePaths[$index])),
+                    "id" => $rows[$index]["id"],
+                    "status" => $rows[$index]["status"] == 1
+                ];
+                @unlink($dstPath);
+            }
+
+            break;
+        }
+
+        return $result;
     }
 
     /**

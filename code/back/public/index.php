@@ -21,7 +21,9 @@ ApplicationRouter::quickRouting(
     route: $_SERVER["REQUEST_URI"],
     routesMap: [
         "post" => [
-            "/pdfpseudo/entities" => [PdfPseudoAppController::class,"provideEntities"]
+            "/pdfpseudo/entities" => [PdfPseudoAppController::class,"provideEntities"],
+            "/pdfpseudo/reload" => [PdfPseudoAppController::class,"reload"],
+            "/pdfpseudo/status" => [PdfPseudoAppController::class,"status"],
         ]
     ]
 );

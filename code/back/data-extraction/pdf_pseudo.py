@@ -144,7 +144,17 @@ class PdfPseudo:
 
     # process the reconstruct
     def reconstruct(self,entities_map):
-        pass
+        def internal_reconstruct(text):
+            for word_data in entities_map["content_entities"]:
+                if word_data["modified"].strip() in text:
+                    text = text.replace(word_data["modified"].strip(), word_data["word"])
+
+            return text
+
+        # recreate pdf
+        self.parse_pdf(to_do_for_line= internal_reconstruct)
+
+        # @todo voir pour les metadonnées
 
     # provided base map of words to anonymise
     def get_words_to_anonymize_map(self,text):
@@ -210,25 +220,32 @@ class PdfPseudo:
                             # En cas d'erreur, utiliser le blanc comme couleur par défaut
                             background_color = (1, 1, 1)
 
-                        replace_text = to_do_for_line(original_text)
-
                         # Utiliser la couleur de fond extraite pour le rectangle
-                        new_page.draw_rect(rect, color=background_color, fill=background_color)
+                        # new_page.draw_rect(rect, color=background_color, fill=background_color)
 
                         # Calculer le point d'insertion ajusté
                         # Ajout d'un décalage vertical basé sur la taille de la police
-                        insertion_point = fitz.Point(
-                            rect.tl.x,  # x reste identique
-                            rect.tl.y + font_size * 0.85  # ajustement vertical
-                        )
+                        #insertion_point = fitz.Point(
+                            #rect.tl.x,  # x reste identique
+                            #rect.tl.y + font_size * 0.85  # ajustement vertical
+                        #)
 
-                        new_page.insert_text(
-                            insertion_point,
-                            replace_text,
-                            fontname="helv",
-                            fontsize=font_size,
-                            color=self.convert_color_to_rgb(color_value=color)
+                        #new_page.insert_text(
+                            #insertion_point,
+                            #replace_text,
+                            #fontname="helv",
+                            #fontsize=font_size,
+                            #color=self.convert_color_to_rgb(color_value=color)
+                        #)
+                        redact_annot = new_page.add_redact_annot(
+                            rect,
+                            text=to_do_for_line(original_text),
+                            fontname="helv",  # Utilisation de la police helvetica
+                            fontsize=font_size,  # Taille de police d'origine
+                            text_color= self.convert_color_to_rgb(color),  # Couleur du texte d'origine
+                            fill=background_color  # Couleur de fond détectée
                         )
+            new_page.apply_redactions()
         return self.doc
 
     # save the current doc in file
