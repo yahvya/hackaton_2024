@@ -56,6 +56,7 @@ export default function FileUpload() {
       }
 
       const data = await response.json();
+      console.log(data);
 
       for (const key in data) {
         setPdfAsBlob([...pdfAsBlob, data[key].pdfAsBlob]);
