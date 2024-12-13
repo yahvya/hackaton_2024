@@ -17,8 +17,8 @@ class PdfPseudoAppController extends AbstractController {
      */
     public function provideEntities():never{
         $this->renderJson([
-            ["pdfAsBlob" => base64_encode(file_get_contents("C:\Users\Etudiant\Desktop\\fichiers-temporaires\\facture.pdf"))],
-            ["pdfAsBlob" => base64_encode(file_get_contents("C:\Users\Etudiant\Desktop\\fichiers-temporaires\\BACHIRCV.pdf"))]
+            ["pdfAsBlob" => base64_encode(file_get_contents("/Users/antocreadev/Desktop/Roadmap.pdf"))],
+            ["pdfAsBlob" => base64_encode(file_get_contents("/Users/antocreadev/Desktop/normalisation.pdf"))]
         ]);
         if(!array_key_exists(key: "pdfs",array: $_FILES))
             ApplicationRouter::unauthorized(["error" => "Please provide a pdf file"]);

@@ -1,8 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Upload, X } from "lucide-react";
+import { Upload } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
@@ -67,22 +66,20 @@ export default function FileUpload() {
   };
 
   const thumbs = files.map((file) => (
-    <Card key={file.name} className="relative inline-block m-2 ">
-      <CardContent className="p-2">
-        <embed
-          src={file.preview}
-          type="application/pdf"
-          className="w-full h-full"
-        />
-        <button
-          onClick={() => removeFile(file)}
-          className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-          aria-label={`Supprimer ${file.name}`}
-        >
-          <X size={16} />
-        </button>
-      </CardContent>
-    </Card>
+    <div key={file.name} className="w-full h-[40rem] flex flex-col pb-4">
+      <embed
+        src={file.preview}
+        type="application/pdf"
+        className="w-full h-full"
+      />
+
+      {/* <Button
+        className="bg-red-500 hover:bg-red-600 absolute"
+        onClick={() => removeFile(file)}
+      >
+        <Trash className="w-4 h-4" />
+      </Button> */}
+    </div>
   ));
 
   return (
@@ -105,39 +102,42 @@ export default function FileUpload() {
           </p>
         )}
       </div>
-      <aside className="mt-4">
-        <h4 className="text-lg font-semibold mb-2">
-          {files.length > 0 ? "Fichiers PDF sélectionnés : " : ""}
-        </h4>
-        {thumbs}
-      </aside>
-      {pdfAsBlob.length > 0 && (
-        <div>
-          <h4 className="text-lg font-semibold mb-2">Fichiers PDF générés :</h4>
-          {pdfAsBlob.map((pdf, index) => (
-            <Card key={index} className="relative inline-block m-2">
-              <CardContent className="p-2">
-                <embed
-                  src={`data:application/pdf;base64,${pdf}`}
-                  type="application/pdf"
-                  className="w-full h-full"
-                />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-
       {files.length > 0 && (
         <Button
-          className="mt-4"
+          className="m-4 ml-0 w-56 h-14"
           onClick={() => {
             uploadFiles();
           }}
         >
-          Envoyer les fichiers
+          <p className="text-lg">Envoyer les fichiers</p>
         </Button>
       )}
+
+      <section className="grid grid-cols-2 gap-4 pb-10">
+        <div className="">
+          <h1 className="text-2xl font-bold pb-4">Fichiers sélectionnés :</h1>
+          {thumbs}
+        </div>
+
+        <div className="">
+          <h1 className="text-2xl font-bold pb-4">
+            {pdfAsBlob.length > 0 ? "Fichiers traités :" : ""}
+          </h1>
+          {pdfAsBlob.length > 0 && (
+            <div className="flex flex-col">
+              {pdfAsBlob.map((pdf, index) => (
+                <div key={index} className="w-full h-[40rem] pb-4">
+                  <embed
+                    src={`data:application/pdf;base64,${pdf}`}
+                    type="application/pdf"
+                    className="w-full h-full"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
     </section>
   );
 }
