@@ -68,14 +68,17 @@ class PdfPseudoAppController extends AbstractController {
      * @return never
      */
     public function status():never{
-        if(!array_key_exists(key: "id",array: $_POST) || !array_key_exists("status",array: $_POST))
+        if(!array_key_exists(key: "id",array: $_POST))
             ApplicationRouter::unauthorized(["error" => "Please provide data"]);
 
         $pdo = new PDO("mysql:host=localhost;dbname=hackathon_2024", "root", "");
+        $request = $pdo->prepare("SELECT status FROM anonymisation WHERE id = ?");
+        $request->execute([$_POST["id"]]);
+        $status = $request->fetch(PDO::FETCH_ASSOC)["status"];
         $request = $pdo->prepare("UPDATE anonymisation SET status=? WHERE id=?");
 
         $this->renderJson(["success" => $request->execute([
-            $_POST["status"] === "true",
+            $status ? 0 : 1,
             $_POST["id"],
         ])]);
     }

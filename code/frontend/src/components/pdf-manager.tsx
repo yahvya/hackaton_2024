@@ -32,20 +32,7 @@ interface PDFFile {
 
 // On déplace les données exemple en dehors du composant
 const sampleFiles: PDFFile[] = [
-  {
-    id: "1",
-    name: "document1.pdf",
-    status: "done",
-    url: "/document1.pdf",
-    changes: ["Updated page 1", "Fixed formatting"],
-  },
-  {
-    id: "2",
-    name: "document2.pdf",
-    status: "not_done",
-    url: "/document2.pdf",
-    changes: [],
-  },
+
   // Add more sample files as needed
 ];
 
@@ -95,7 +82,7 @@ export default function PDFManager() {
           )}
         </div>
         <div className="h-1/3 bg-card rounded-lg shadow-lg">
-          <ChangeLog file={selectedFile} />
+          <ChangeLog file={setFiles} />
         </div>
       </div>
     </div>

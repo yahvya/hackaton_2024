@@ -30,7 +30,8 @@ export function ChangeLog({ file }: ChangeLogProps) {
             ))}
           </ul>
         ) : (
-          <pre className="text-sm">{JSON.stringify(JSON.parse(file.entitiesConfig).metadata_entities, null, 2)}</pre>
+            <div>bonjour</div>
+          // <pre className="text-sm">{JSON.stringify(JSON.parse(file.entitiesConfig).metadata_entities, null, 2)}</pre>
         )}
       </div>
     </ScrollArea>

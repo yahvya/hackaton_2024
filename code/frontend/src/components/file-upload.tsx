@@ -128,9 +128,7 @@ export default function FileUpload() {
           <h1 className="text-2xl font-bold pb-4">
             {pdfAsBlob.length > 0 ? "Fichiers traités :" : ""}
           </h1>
-          {isLoading ? (
-            <p>Chargement des fichiers...</p>
-          ) : (
+
             <div className="flex flex-col">
               {pdfAsBlob.map((pdf, index) => (
                 <div key={index} className="w-full h-[40rem] pb-4">
@@ -142,7 +140,7 @@ export default function FileUpload() {
                 </div>
               ))}
             </div>
-          )}
+
         </div>
       </section>
     </section>

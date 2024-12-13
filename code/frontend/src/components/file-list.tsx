@@ -31,23 +31,45 @@ export function FileList({
     const form = new FormData();
 
     form.append("id", id);
-    form.append("status", status);
     const response = await fetch("http://127.0.0.1:8080/pdfpseudo/status", {
       method: "POST",
       body: form,
     });
+    console.log(await response.text())
+
     if (response.ok) {
-      // cherche le file dans state et met à jour le status
-      const file = files.find((file) => file.id === id);
-      if (file) {
-        file.status = status;
+      let element: any  = ""
+      for(const el of files) {
+        if (el.id == id) {
+          el.status = !el.status
+
+          element = el
+
+          break
+        }
       }
-      onFileSelect([...files]);
-      console.log("file", file);
-      console.log("response", response.body);
+
+      onFileSelect(element)
     }
 
-    console.log(await response.text());
+      console.log("files   -   >  ;",files)
+
+
+    // if (response.ok) {
+    //   // cherche le file dans state et met à jour le status
+    //   //const file = files.find((file) => file.id === id);
+    //   //if (file) {
+    //     //file.status = status;
+    //   //}
+    //   //onFileSelect([...files]);
+    //   //console.log("file", file);
+    //   console.log(files[0].id)
+    //   console.log(files[0].status)
+    //
+    //   console.log("response", response.body);
+    // }
+    //
+    // console.log(await response.text());
   };
 
   return (
