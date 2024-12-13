@@ -1,7 +1,7 @@
 import json
+import os
 import sys
 import traceback
-import pikepdf
 from pdf_pseudo import PdfPseudo
 from transform_recognizer import TransformerRecognizer
 
@@ -17,7 +17,7 @@ try:
         render_response(response={"success": False, "error": "Please provide valid arguments"})
 
     # load args and check action
-    pdfs_input_path, results_output_path, action = sys.argv[1:]
+    pdfs_input_path, results_output_path, action = sys.argv[1:4]
     pdfs_input_path = pdfs_input_path.split(",")
     results_output_path = results_output_path.split(",")
     valid_actions = ["anonymise", "reconstruct"]
@@ -30,7 +30,11 @@ try:
         if count_of_args < 5:
             render_response(response={"success": False, "error": "The entities map is expected"})
         else:
-            reconstruct_entities_map = sys.argv[4].split(",")
+            with open(sys.argv[4],"rb") as f:
+                reconstruct_entities_map = json.loads(f.read())
+                f.close()
+
+            os.remove(sys.argv[4])
 
     # apply action
     analyzer = TransformerRecognizer.build_analyser()
@@ -46,7 +50,7 @@ try:
             entities_map = pdf_pseudo.anonymise(output_file_path= result_output_path)
             result_map[pdf_input_path] = entities_map
         elif action == "reconstruct":
-            pdf_pseudo.reconstruct(entities_map=reconstruct_entities_map[index])
+            pdf_pseudo.reconstruct(entities_map=json.loads(reconstruct_entities_map[index]))
 
         pdf_pseudo.save_result_in(output_file_path=result_output_path)
         pdf_pseudo.free_resources(output_file_path=result_output_path)

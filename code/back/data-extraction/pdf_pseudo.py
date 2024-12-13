@@ -144,7 +144,17 @@ class PdfPseudo:
 
     # process the reconstruct
     def reconstruct(self,entities_map):
-        pass
+        def internal_reconstruct(text):
+            for word_data in entities_map["content_entities"]:
+                if word_data["modified"].strip() in text:
+                    text = text.replace(word_data["modified"].strip(), word_data["word"])
+
+            return text
+
+        # recreate pdf
+        self.parse_pdf(to_do_for_line= internal_reconstruct)
+
+        # @todo voir pour les metadonnées
 
     # provided base map of words to anonymise
     def get_words_to_anonymize_map(self,text):

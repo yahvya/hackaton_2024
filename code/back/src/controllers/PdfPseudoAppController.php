@@ -4,6 +4,7 @@ namespace Controllers;
 
 use PdfPseudoApp\App\PdfPseudoApp;
 use PdfPseudoApp\Utils\DefaultLogger;
+use PDO;
 use Routing\ApplicationRouter;
 use Throwable;
 
@@ -16,10 +17,6 @@ class PdfPseudoAppController extends AbstractController {
      * @return never
      */
     public function provideEntities():never{
-        $this->renderJson([
-            ["pdfAsBlob" => base64_encode(file_get_contents("C:\Users\Etudiant\Desktop\\fichiers-temporaires\\facture.pdf"))],
-            ["pdfAsBlob" => base64_encode(file_get_contents("C:\Users\Etudiant\Desktop\\fichiers-temporaires\\BACHIRCV.pdf"))]
-        ]);
         if(!array_key_exists(key: "pdfs",array: $_FILES))
             ApplicationRouter::unauthorized(["error" => "Please provide a pdf file"]);
 
@@ -46,7 +43,7 @@ class PdfPseudoAppController extends AbstractController {
         $pdfPseudoApp = new PdfPseudoApp(
             pdfFilePaths: array_map(fn(array $datas):string => $datas["tmp_name"],$normalizedDatas),
             pythonScriptPath: APP_ROOT . "data-extraction/app.py",
-            privateStoragePath: APP_ROOT . "private-storage/",
+            privateStoragePath: APP_ROOT . "private-storage/anonymous/",
             logger: $logger
         );
 
@@ -56,5 +53,30 @@ class PdfPseudoAppController extends AbstractController {
         catch(Throwable){
             ApplicationRouter::internalError();
         }
+    }
+
+    /**
+     * @brief reload the entities
+     * @return never
+     */
+    public function reload():never{
+        $this->renderJson(PdfPseudoApp::reload(APP_ROOT . "private-storage/rebuild/",APP_ROOT . "data-extraction/app.py"));
+    }
+
+    /**
+     * @brief set status
+     * @return never
+     */
+    public function status():never{
+        if(!array_key_exists(key: "id",array: $_POST) || !array_key_exists("status",array: $_POST))
+            ApplicationRouter::unauthorized(["error" => "Please provide data"]);
+
+        $pdo = new PDO("mysql:host=localhost;dbname=hackathon_2024", "root", "");
+        $request = $pdo->prepare("UPDATE anonymisation SET status=? WHERE id=?");
+
+        $this->renderJson(["success" => $request->execute([
+            $_POST["status"],
+            $_POST["id"],
+        ])]);
     }
 }
