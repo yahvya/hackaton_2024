@@ -56,11 +56,12 @@ export default function FileUpload() {
       }
 
       const data = await response.json();
-      console.log(data);
-
+      const allData = []
       for (const key in data) {
-        setPdfAsBlob([...pdfAsBlob, data[key].pdfAsBlob]);
+        allData.push(data[key].pdfAsBlob );
+
       }
+      setPdfAsBlob(allData)
     } catch (error) {
       console.error("Erreur lors de l'envoi des fichiers:", error);
     }

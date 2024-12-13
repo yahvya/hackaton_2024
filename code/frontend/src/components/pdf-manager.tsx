@@ -61,11 +61,9 @@ export default function PDFManager() {
           method: "POST",
         });
         if (!response.ok) {
-          console.error(response);
           throw new Error("Erreur lors de la récupération des PDFs");
         }
         const data = await response.json();
-        console.log(data);
         setFiles(data);
       } catch (error) {
         console.error("Erreur:", error);

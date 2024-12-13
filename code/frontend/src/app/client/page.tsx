@@ -1,6 +1,5 @@
 import FileUpload from "@/components/file-upload";
 import StatsCards from "@/components/stat-card";
-
 export default function Home() {
   return (
     <div className="h-screen">

@@ -18,7 +18,7 @@ export function ChangeLog({ file }: ChangeLogProps) {
   const metadata = file.entitiesConfig?.metadata_entities;
 
   return (
-    <ScrollArea className="h-full">
+    <ScrollArea className="h-full mb-4">
       <div>
         <h3 className="font-semibold mb-2">Métadonnées du PDF</h3>
         {file.changes && file.changes.length > 0 ? (
@@ -30,7 +30,7 @@ export function ChangeLog({ file }: ChangeLogProps) {
             ))}
           </ul>
         ) : (
-          <pre className="text-sm">{JSON.stringify(file, null, 2)}</pre>
+          <pre className="text-sm">{JSON.stringify(JSON.parse(file.entitiesConfig).metadata_entities, null, 2)}</pre>
         )}
       </div>
     </ScrollArea>

@@ -21,11 +21,29 @@ export function FileList({
   const [sortByStatus, setSortByStatus] = useState(false);
 
   const sortedFiles = [...files].sort((a, b) => {
-    if (sortByStatus) {
-      return a.status.localeCompare(b.status);
-    }
-    return a.name.localeCompare(b.name);
+    // if (sortByStatus) {
+    //   return a.status.localeCompare(b.status);
+    // }
+    // return a.name.localeCompare(b.name);
   });
+
+   const handleClickUpdateState = async (id, status) => {
+       const form = new FormData();
+
+       form.append("id", id)
+        form.append("status",status)
+       const response = await fetch(
+           "http://127.0.0.1:8080/pdfpseudo/status",{
+               method: "POST",
+               body: form
+           }
+       )
+       if (response.ok) {
+           console.log("response", response.body);
+       }
+
+       console.log(await response.text())
+    }
 
   return (
     <div className="flex flex-col h-full">
@@ -40,7 +58,7 @@ export function FileList({
       <ScrollArea className="flex-1">
         <div className="space-y-1 p-2">
           {sortedFiles.map((file) => (
-            <button
+            <div
               key={file.id}
               onClick={() => onFileSelect(file)}
               className={`w-full flex items-center justify-between p-2 text-sm rounded-lg hover:bg-accent ${
@@ -57,7 +75,13 @@ export function FileList({
               >
                 {`${file.status ? "Traité" : "En cours"}`}
               </span>
-            </button>
+                <button
+                    onClick={() => handleClickUpdateState(file.id, !file.status)} >
+                    Traité
+                </button>
+
+
+            </div>
           ))}
         </div>
       </ScrollArea>

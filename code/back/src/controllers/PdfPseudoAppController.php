@@ -17,10 +17,6 @@ class PdfPseudoAppController extends AbstractController {
      * @return never
      */
     public function provideEntities():never{
-        $this->renderJson([
-            ["pdfAsBlob" => base64_encode(file_get_contents("C:\Users\Etudiant\Desktop\\fichiers-temporaires\\facture.pdf"))],
-            ["pdfAsBlob" => base64_encode(file_get_contents("C:\Users\Etudiant\Desktop\\fichiers-temporaires\\BACHIRCV.pdf"))]
-        ]);
         if(!array_key_exists(key: "pdfs",array: $_FILES))
             ApplicationRouter::unauthorized(["error" => "Please provide a pdf file"]);
 
@@ -79,7 +75,7 @@ class PdfPseudoAppController extends AbstractController {
         $request = $pdo->prepare("UPDATE anonymisation SET status=? WHERE id=?");
 
         $this->renderJson(["success" => $request->execute([
-            $_POST["status"],
+            $_POST["status"] === "true",
             $_POST["id"],
         ])]);
     }
