@@ -104,7 +104,7 @@ export default function PDFManager() {
           )}
         </div>
         <div className="h-1/3 bg-card rounded-lg shadow-lg">
-          <ChangeLog file={setFiles} />
+          <ChangeLog file={selectedFile} />
         </div>
       </div>
     </div>

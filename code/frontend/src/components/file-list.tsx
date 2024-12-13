@@ -17,8 +17,7 @@ export function FileList({
   onFileSelect,
   selectedFileId,
 }: FileListProps) {
-  const t = files
-  const [fileList,setFileFist] = useState(t)
+  const [fileList,setFileFist] = useState(files)
   const [sortByStatus, setSortByStatus] = useState(false);
 
   const sortedFiles = [...files].sort((a, b) => {
@@ -53,17 +52,10 @@ export function FileList({
 
   return (
     <div className="flex flex-col h-full">
-      <Button
-        variant="ghost"
-        className="flex justify-between w-full p-4"
-        onClick={() => setSortByStatus(!sortByStatus)}
-      >
-        <span>Sort by {sortByStatus ? "Name" : "Status"}</span>
-        <ArrowUpDown className="h-4 w-4" />
-      </Button>
+        <h1>Liste des PDFS</h1>
       <ScrollArea className="flex-1">
         <div className="space-y-1 p-2">
-          {fileList.map((file) => (
+          {files.map((file) => (
             <div
               key={file.id}
               onClick={() => onFileSelect(file)}

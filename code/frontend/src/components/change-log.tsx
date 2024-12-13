@@ -6,6 +6,7 @@ interface ChangeLogProps {
 }
 
 export function ChangeLog({ file }: ChangeLogProps) {
+    console.log("file",file)
   if (!file) {
     return (
       <div className="p-4 text-center text-muted-foreground">
@@ -30,8 +31,8 @@ export function ChangeLog({ file }: ChangeLogProps) {
             ))}
           </ul>
         ) : (
-            <div>bonjour</div>
-          // <pre className="text-sm">{JSON.stringify(JSON.parse(file.entitiesConfig).metadata_entities, null, 2)}</pre>
+            // <p>bonjou</p>
+          <pre className="text-sm">{JSON.stringify(JSON.parse(file.entitiesConfig).metadata_entities, null, 2)}</pre>
         )}
       </div>
     </ScrollArea>
