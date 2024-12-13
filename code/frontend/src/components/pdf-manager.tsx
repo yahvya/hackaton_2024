@@ -32,7 +32,6 @@ interface PDFFile {
 
 // On déplace les données exemple en dehors du composant
 const sampleFiles: PDFFile[] = [
-
   // Add more sample files as needed
 ];
 
@@ -62,13 +61,39 @@ export default function PDFManager() {
     fetchPDFs();
   }, []); // Le tableau vide signifie que l'effet ne s'exécute qu'une fois au montage
 
+  useEffect(() => {
+    if (selectedFile) {
+      // Trouve le fichier correspondant dans la nouvelle liste
+      const updatedFile = files.find((file) => file.id === selectedFile.id);
+      if (updatedFile) {
+        setSelectedFile(updatedFile);
+      }
+    }
+  }, [files]);
+
+  const handleClickUpdateState = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8080/pdfpseudo/reload", {
+        method: "POST",
+      });
+      if (!response.ok) {
+        throw new Error("Erreur lors de la récupération des PDFs");
+      }
+      const data = await response.json();
+      setFiles(data);
+    } catch (error) {
+      console.error("Erreur:", error);
+    }
+  };
+
   return (
     <div className="flex h-full max-h-screen bg-background p-6 gap-6">
       <div className="w-1/3 bg-card rounded-lg shadow-lg">
         <FileList
-          files={files} // On utilise maintenant les fichiers de l'état
+          files={files}
           onFileSelect={setSelectedFile}
           selectedFileId={selectedFile?.id}
+          onUpdateState={handleClickUpdateState}
         />
       </div>
       <div className="w-2/3 flex flex-col gap-6">
