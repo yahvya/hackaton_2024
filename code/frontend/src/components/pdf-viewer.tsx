@@ -3,7 +3,6 @@ interface PDFViewerProps {
 }
 
 export function PDFViewer({ url }: PDFViewerProps) {
-  console.log(url);
   const pdfUrl = `data:application/pdf;base64,${url}`;
   return (
     <div className="w-full h-full bg-white rounded-lg overflow-hidden">

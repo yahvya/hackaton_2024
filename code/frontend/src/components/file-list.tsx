@@ -17,7 +17,8 @@ export function FileList({
   onFileSelect,
   selectedFileId,
 }: FileListProps) {
-  console.log("files", files);
+  const t = files
+  const [fileList,setFileFist] = useState(t)
   const [sortByStatus, setSortByStatus] = useState(false);
 
   const sortedFiles = [...files].sort((a, b) => {
@@ -35,41 +36,19 @@ export function FileList({
       method: "POST",
       body: form,
     });
-    console.log(await response.text())
 
-    if (response.ok) {
-      let element: any  = ""
-      for(const el of files) {
-        if (el.id == id) {
-          el.status = !el.status
+    const updatedFileList = [...fileList];
 
-          element = el
-
-          break
-        }
+    // Modifiez l'élément avec le bon id dans la copie
+    for (let index in updatedFileList) {
+      if (updatedFileList[index].id === id) {
+        updatedFileList[index].status = !updatedFileList[index].status;
+        break;
       }
-
-      onFileSelect(element)
     }
 
-      console.log("files   -   >  ;",files)
-
-
-    // if (response.ok) {
-    //   // cherche le file dans state et met à jour le status
-    //   //const file = files.find((file) => file.id === id);
-    //   //if (file) {
-    //     //file.status = status;
-    //   //}
-    //   //onFileSelect([...files]);
-    //   //console.log("file", file);
-    //   console.log(files[0].id)
-    //   console.log(files[0].status)
-    //
-    //   console.log("response", response.body);
-    // }
-    //
-    // console.log(await response.text());
+    // Mettez à jour l'état avec la nouvelle liste
+    setFileFist(updatedFileList);
   };
 
   return (
@@ -84,7 +63,7 @@ export function FileList({
       </Button>
       <ScrollArea className="flex-1">
         <div className="space-y-1 p-2">
-          {sortedFiles.map((file) => (
+          {fileList.map((file) => (
             <div
               key={file.id}
               onClick={() => onFileSelect(file)}

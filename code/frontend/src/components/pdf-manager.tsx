@@ -31,13 +31,10 @@ interface PDFFile {
 }
 
 // On déplace les données exemple en dehors du composant
-const sampleFiles: PDFFile[] = [
-  // Add more sample files as needed
-];
 
 export default function PDFManager() {
   const [selectedFile, setSelectedFile] = useState<PDFFile | null>(null);
-  const [files, setFiles] = useState<PDFFile[]>(sampleFiles);
+  const [files, setFiles] = useState<PDFFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
