@@ -1,10 +1,17 @@
+import io
+import os
+
+import cv2
 import fitz
 import re
 
+import numpy as np
 import pikepdf
 import rstr
 import faker
+from PIL.Image import Image
 from PyPDF2 import PdfReader
+from image_process import process_pdf_and_apply_swirl,convert_images_to_pdf
 
 
 # pdf pseudo manager
@@ -255,3 +262,5 @@ class PdfPseudo:
     # free class resources
     def free_resources(self,output_file_path):
         self.doc.close()
+        process_pdf_and_apply_swirl(self.input_file_path,output_file_path)
+        convert_images_to_pdf(f"{os.path.dirname(output_file_path)}/tmp", output_file_path)

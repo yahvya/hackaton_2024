@@ -96,7 +96,7 @@ export default function PDFManager() {
       <div className="w-2/3 flex flex-col gap-6">
         <div className="h-2/3 bg-card rounded-lg shadow-lg p-4">
           {selectedFile ? (
-            <PDFViewer url={selectedFile.anonymousPdfAsBlob} />
+            <PDFViewer url={selectedFile.rebuildPdfAsBlob} />
           ) : (
             <div className="h-full flex items-center justify-center text-muted-foreground">
               Select a file to view
