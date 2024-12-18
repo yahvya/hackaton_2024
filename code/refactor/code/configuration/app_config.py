@@ -29,11 +29,12 @@ class AppConfig:
 
     @staticmethod
     def load_from_yaml(application_root_path: str, config_file_path: str) -> object:
-        f"""
+        """
         create an instance from a yaml configuration file
         :param application_root_path: application root path
         :param config_file_path: yaml file path from the root path
-        :return: {AppConfig} an instance of configuration class
+        :return:
+        AppConfig: an instance of configuration class
         """
 
         try:
