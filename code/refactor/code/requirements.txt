@@ -1,2 +1,7 @@
 pyyaml~=6.0.2
 Spire.Pdf
+presidio_analyzer
+transformers
+tensorflow
+tf_keras
+tiktoken

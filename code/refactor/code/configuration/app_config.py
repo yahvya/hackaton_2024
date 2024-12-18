@@ -27,6 +27,11 @@ class AppConfig:
         root path of the application
     """
 
+    model_config: dict[str,float]
+    """
+        model configuration
+    """
+
     @staticmethod
     def load_from_yaml(application_root_path: str, config_file_path: str) -> object:
         """
@@ -46,6 +51,7 @@ class AppConfig:
                     result_container_directory_path=config_file_content["result-container-directory-path"],
                     classifiers_container_directory_path=config_file_content["classifiers-container-directory-path"],
                     application_root_path=application_root_path,
+                    model_config=config_file_content["model-config"]
                 )
         except Exception as _:
             raise Exception("Fail to load the configuration file")
