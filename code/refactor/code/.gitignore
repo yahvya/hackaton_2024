@@ -1,0 +1,3 @@
+secure-storage/env.yaml
+secure-storage/anonymisation-results/*
+!secure-storage/anonymisation-results/.gitkeep
