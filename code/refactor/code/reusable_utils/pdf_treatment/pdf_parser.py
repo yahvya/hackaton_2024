@@ -25,24 +25,23 @@ class PDFParser:
         """
         try:
             # load pdf document
-            pdf = PdfDocument()
-            pdf.LoadFromFile(self.pdf_file_path)
+            pdf_spire = PdfDocument()
+            pdf_spire.LoadFromFile(self.pdf_file_path)
 
             # define utils
             pdf_image_helper = PdfImageHelper()
-            extraction_options = PdfTextExtractOptions()
+            pdf_text_extract_options = PdfTextExtractOptions()
 
             # parse pages
-            for page_index in range(0,pdf.Pages.Count):
-                page = pdf.Pages[page_index]
+            for page_index in range(0,pdf_spire.Pages.Count):
+                page = pdf_spire.Pages[page_index]
                 page_text_replacer = PdfTextReplacer(page)
 
                 # extract text and images
-                page_text = PdfTextExtractor(page= page).ExtractText(options= extraction_options)
                 page_images = pdf_image_helper.GetImagesInfo(page= page)
-
+                page_text= PdfTextExtractor(page= page).ExtractText(options= pdf_text_extract_options)
                 todo_during_parsing(page_text,page_images,page_text_replacer,pdf_image_helper)
 
-            return pdf
+            return pdf_spire
         except Exception as _:
             raise Exception("Fail to parse pdf file")

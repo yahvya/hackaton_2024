@@ -6,3 +6,4 @@ tf_keras
 tiktoken
 tensorflow
 sentencepiece
+spacy
