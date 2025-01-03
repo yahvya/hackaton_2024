@@ -3,8 +3,8 @@ REQUIREMENTS_FILEPATH=./requirements.txt
 
 # general commands (not depend on the used system)
 init-general:
-	@echo "> Initalize python virtual env"
-	python -m venv venv
+	@echo "> Initalize python virtual env with 3.9 version. Think to enable long path on Windows. Download : python -m spacy download fr_core_news_lg"
+	python3.9 -m venv venv
 
 # init project for windows system
 init-windows: init-general

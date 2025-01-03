@@ -7,9 +7,8 @@ class PDFParser:
     """
 
     pdf_file_path: str
-
     """
-        application configuration
+        pdf to parse path
     """
 
     def __init__(self, pdf_file_path: str):
@@ -22,8 +21,7 @@ class PDFParser:
         """
         parse the pdf file
         :param todo_during_parsing: callable called during the parsing step
-        :return:
-        PdfDocument: parsing pdf document
+        :return PdfDocument: used pdf document
         """
         try:
             # load pdf document

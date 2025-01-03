@@ -1,7 +1,8 @@
 pyyaml~=6.0.2
 Spire.Pdf
 presidio_analyzer
-transformers
-tensorflow
+transformers~=4.47.1
 tf_keras
 tiktoken
+tensorflow
+sentencepiece
