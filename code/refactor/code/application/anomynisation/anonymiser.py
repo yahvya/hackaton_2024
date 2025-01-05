@@ -1,6 +1,7 @@
 import re
 from typing import Dict, List
 
+from faker import Faker
 from spire.pdf import PdfDocument, Utilities_PdfImageInfo, PdfTextReplacer, PdfImageHelper
 from reusable_utils.pdf_treatment.pdf_parser import PDFParser
 from reusable_utils.recognition.text.text_recognizer import TextRecognizer, TextParseResult
@@ -48,6 +49,28 @@ class Anonymiser:
         text elements label mapping
     """
 
+    regex_map = [
+        "[\+]",
+        "-",
+        "[\/]",
+        "[\(]",
+        "[\)]",
+        "[\n]",
+        "[ ]",
+        "[\r]",
+        "[\t]",
+        "[A-Z]",
+        "[a-z]",
+        "[0-9]",
+        "[@]",
+        "[.]",
+        "[ÉÈÀÙÂÊÎÔÛÄËÏÖÜÇéèàùâêîôûäëïöüç]",
+        "."
+    ]
+    """
+        replacement regex map
+    """
+
     app_recognizers_utils = [
         TransformRecognizer(
             supported_entities_mapping=default_text_elements_mapping,
@@ -69,20 +92,31 @@ class Anonymiser:
         text recognizer
     """
 
-    @staticmethod
-    def anonymise_pdf(pdf_file_path:str) -> PdfDocument:
+    __faker: Faker = Faker()
+    """
+        internal faker 
+    """
+
+    anonymise_with_semantic: bool
+    """
+        define if pdf should be anonymised by keeping semantic
+    """
+
+    def anonymise_pdf(self,pdf_file_path:str,anonymise_with_semantic: bool = True) -> PdfDocument:
         """
             anonymise pdf file from the given path
             :param pdf_file_path: pdf file path
+            :param anonymise_with_semantic: whether to anonymise pdf with semantic
             :return PdfDocument: the modified pdf document to close after
         """
 
+        self.anonymise_with_semantic = anonymise_with_semantic
+
         return PDFParser(pdf_file_path=pdf_file_path).parse_content(
-            todo_during_parsing= Anonymiser.__to_do_during_parsing
+            todo_during_parsing= self.__to_do_during_parsing
         )
 
-    @staticmethod
-    def __to_do_during_parsing(page_text:str, page_images:List[Utilities_PdfImageInfo], page_text_replacer:PdfTextReplacer, page_image_helper:PdfImageHelper):
+    def __to_do_during_parsing(self,page_text:str, page_images:List[Utilities_PdfImageInfo], page_text_replacer:PdfTextReplacer, page_image_helper:PdfImageHelper):
         """
             action to do on parsed block in the pdf
             :param page_text: page text content
@@ -95,8 +129,15 @@ class Anonymiser:
         text_analyze_filtered_results = Anonymiser.filter_bad_detections(results= Anonymiser.text_recognizer.analyze(text= page_text))
 
         for result in text_analyze_filtered_results:
-            print(result)
-            page_text_replacer.ReplaceText(oldText= result.word,newText= "<remplacement>")
+            page_text_replacer.ReplaceText(oldText= result.word,newText= self.replace_text_element_with(result= result))
+
+    def replace_text_element_with(self,result: TextParseResult) -> str:
+        """
+            replace text element with another string based on the defined anonymisation mode
+            :param result: result from text_recognizer
+            :return str: replaced text
+        """
+        return Anonymiser.regexify_str(input_str= result.word) if not self.anonymise_with_semantic else Anonymiser.fake_str_from_type(input_str= result.word,type_from_mapping_elements= result.type)
 
     @staticmethod
     def filter_bad_detections(results: List[TextParseResult]) -> List[TextParseResult]:
@@ -106,3 +147,51 @@ class Anonymiser:
         :return List[TextParseResult]
         """
         return results
+
+    @staticmethod
+    def regexify_str(input_str:str) -> str:
+        """
+            replace each character of the input str by an item with the same format based on a regex matching. the result will have the same format (same length ... as the input_str)
+            :param input_str: input string
+            :return str: replaced string
+        """
+        regex_str = ""
+
+        for char in input_str:
+            for regex in Anonymiser.regex_map:
+                if re.match(regex, char):
+                    regex_str = regex_str + regex
+                    break
+
+        return regex_str
+
+    @staticmethod
+    def fake_str_from_type(input_str:str,type_from_mapping_elements: str) -> str:
+        """
+            fake the input string with an element with the same semantic, the format (len ...) isn't guaranteed
+            :param input_str: input string
+            :param type_from_mapping_elements: element type from mapping elements, if the type don't match regexify will be used
+            :return str: fake string
+        """
+
+        match_map = {
+            "person": lambda : Anonymiser.__faker.full_name(),
+            "organization": lambda : Anonymiser.__faker.company(),
+            "id": lambda : Anonymiser.__faker.org_id(),
+            "email": lambda : Anonymiser.__faker.email(),
+            "url": lambda : Anonymiser.__faker.url(),
+            "iban": lambda : Anonymiser.__faker.iban(),
+            "location": lambda : Anonymiser.__faker.address(),
+            "credit_card": lambda : Anonymiser.__faker.credit_card_number(),
+            "crypto": lambda : Anonymiser.__faker.cryptocurrency_name(),
+            "date_time": lambda : Anonymiser.__faker.date_time().strftime("%d/%m/%Y"),
+            "phone": lambda : Anonymiser.__faker.phone_number(),
+            "ip": lambda : Anonymiser.__faker.ipv4(),
+            "nationality": lambda : Anonymiser.__faker.nationality(),
+            "medical_license": lambda : Anonymiser.__faker.license_plate(),
+            "in_voter": lambda : "in voter",
+            "age": lambda : Anonymiser.__faker.birth_number(),
+            "date": lambda : Anonymiser.__faker.date()
+        }
+
+        return match_map[type_from_mapping_elements]() if type_from_mapping_elements in match_map else Anonymiser.regexify_str(input_str= input_str)
